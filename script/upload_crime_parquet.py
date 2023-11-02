@@ -1,6 +1,5 @@
 import os
 import glob
-import re
 import pandas as pd
 import re
 from mojimoji import zen_to_han
@@ -8,8 +7,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from modules.gcp_class import Gcs_client, Bigquery_cliant
 
-BUCKET_NAME = "crime_portal_data"
-TABLE_ID = "crimes-porttal.portal_dataset.crimes"
+BUCKET_NAME = "crime_board_data"
 
 cols_dict = {
     "罪名": "zaimei",
@@ -103,16 +101,20 @@ def main():
         local_path = f"../output/{local_file_name}"
         upload_path = f"teguchi_en={teguchi}/{local_file_name}"
         # すでにファイルがあればスキップ
-        # if upload_path in set(all_objects):
-        #     continue
+        if upload_path in set(all_objects):
+            continue
         table = pa.Table.from_pandas(d, schema=table_schema, preserve_index=False)
         pq.write_table(table, local_path)
         gcs_client.upload_gcs(BUCKET_NAME, local_path, upload_path)
 
     # テーブル作成
-    bq_cliant = Bigquery_cliant()
-    schema = bq_cliant.create_string_schema(cols_dict.values())
-    bq_cliant.create_external_table(TABLE_ID, BUCKET_NAME, schema)
+    bq_client = Bigquery_cliant()
+    dataset_name = "crime_dataset"
+    table_name = "crime"
+    bq_client.create_dataset(dataset_name)
+    schema = bq_client.create_string_schema(cols_dict.values())
+    table_id = f"{bq_client.client.project}.{dataset_name}.{table_name}"
+    bq_client.create_external_table(BUCKET_NAME, table_id, schema, partitioned=True)
 
 
 if __name__ == "__main__":

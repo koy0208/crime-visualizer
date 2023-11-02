@@ -2,6 +2,7 @@ import json
 from google.cloud import storage
 from google.oauth2 import service_account
 from google.cloud import bigquery
+from google.cloud.exceptions import NotFound
 
 
 class Gcs_client:
@@ -82,11 +83,33 @@ class Bigquery_cliant:
 
         return schema
 
+    @staticmethod
+    def create_schema(schema_dict):
+        schema = []
+        for k, v in schema_dict.items():
+            schema.append(bigquery.SchemaField(k, v, mode="NULLABLE"))
+
+        return schema
+
     def read_sql(self, query):
         df = self.client.query(query).to_dataframe()
         return df
 
-    def create_external_table(self, table_id, bucket_name, schema):
+    def create_dataset(self, dataset_id):
+        # データセットの設定
+        dataset = bigquery.Dataset(f"{self.client.project}.{dataset_id}")
+        dataset.location = "US-WEST1"  # データセットのロケーションを選択
+
+        # データセットの作成
+        try:
+            self.client.get_dataset(dataset_id)  # APIリクエストを使ってデータセットを取得
+            print(f"Dataset already exists: {dataset_id}")
+        except NotFound:
+            # データセットが存在しない場合、新しいデータセットを作成
+            dataset = self.client.create_dataset(dataset, timeout=30)  # タイムアウトを30秒に設定
+            print(f"Created dataset {self.client.project}.{dataset_id}")
+
+    def create_external_table(self, bucket_name, table_id, schema, partitioned=False):
         url = f"gs://{bucket_name}/*"
         source_url_prefix = f"gs://{bucket_name}"
 
@@ -96,11 +119,13 @@ class Bigquery_cliant:
         external_config.autodetect = True
 
         # Configure partitioning options.
-        hive_partitioning_opts = bigquery.HivePartitioningOptions()
-        hive_partitioning_opts.mode = "AUTO"
-        hive_partitioning_opts.require_partition_filter = False
-        hive_partitioning_opts.source_uri_prefix = source_url_prefix
-        external_config.hive_partitioning = hive_partitioning_opts
+        # If partitioned is True, configure partitioning options.
+        if partitioned:
+            hive_partitioning_opts = bigquery.HivePartitioningOptions()
+            hive_partitioning_opts.mode = "AUTO"
+            hive_partitioning_opts.require_partition_filter = False
+            hive_partitioning_opts.source_uri_prefix = source_url_prefix
+            external_config.hive_partitioning = hive_partitioning_opts
 
         table = bigquery.Table(table_id, schema=schema)
         table.external_data_configuration = external_config
@@ -108,14 +133,3 @@ class Bigquery_cliant:
         self.client.delete_table(table_id, not_found_ok=True)
         table = self.client.create_table(table)
         print(f"Created table {table.project}.{table.dataset_id}.{table.table_id}")
-
-    def create_tabel(table_id, bucket_name):
-        # テーブル作成
-        bq_cliant = Bigquery_cliant()
-        table_id = "crimes-porttal.portal_dataset.crimes"
-
-        schema = []
-        for c in cols_dict.values():
-            schema.append(bigquery.SchemaField(c, "STRING", mode="NULLABLE"))
-
-        bq_cliant.create_external_table(table_id, url, source_url_prefix, schema)
