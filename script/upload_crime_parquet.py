@@ -2,36 +2,13 @@ import os
 import glob
 import pandas as pd
 import re
+import json
 from mojimoji import zen_to_han
 import pyarrow as pa
 import pyarrow.parquet as pq
 from modules.gcp_class import Gcs_client, Bigquery_cliant
 
-BUCKET_NAME = "crime_board_data"
-
-cols_dict = {
-    "罪名": "zaimei",
-    "手口": "teguchi",
-    "管轄警察署": "keisatsusyo",
-    "管轄交番・駐在所": "kouban",
-    "都道府県": "prefecture",
-    "市区町村コード": "city_code",
-    "市区町村": "city",
-    "町丁目": "cyoume",
-    "発生年月日": "occurrence_day",
-    "発生時": "occurrence_time",
-    "発生場所": "occurrence_point",
-    "発生場所の詳細": "occurrence_point_info",
-    "被害者の性別": "victim_sex",
-    "被害者の年齢": "victim_age",
-    "被害者の職業": "victim_job",
-    "現金被害の有無": "is_financial_damage",
-    "施錠関係": "sejyou",
-    "現金以外の主な被害品": "other_damage",
-    "盗難防止装置の有無": "is_device",
-    "file_name": "file_name",
-}
-
+pa_dict = {"STRING": pa.string(), "FLOAT64": pa.float64()}
 ja_to_en = {
     "ひったくり": "hittakuri",
     "自転車盗": "zitensyatou",
@@ -59,11 +36,9 @@ def add_all_cols(df, cols_list):
     return df[cols_list]
 
 
-def clean_data(file):
+def clean_data(file, use_cols_dict):
     # データの前処理
     d = pd.read_csv(file, encoding="shift-jis")
-    # 年度はファイル名から取得
-    d["file_name"] = os.path.basename(file)
     # 全角半角処理
     d.columns = [zen_to_han(c, kana=False) for c in d.columns]
     # 余分な文字列の置換
@@ -73,26 +48,30 @@ def clean_data(file):
     for c in zen_han_cols:
         d[c] = [zen_to_han(v, kana=False) for v in d[c].fillna("").astype(str)]
     # 列名を英字に変換
-    d.columns = [cols_dict.get(c) for c in d.columns]
-    d = add_all_cols(d, list(cols_dict.values()))
+    d.columns = [use_cols_dict.get(c) for c in d.columns]
+    d = add_all_cols(d, list(use_cols_dict.values()))
     # 全てを文字列に
     d = d.astype(str)
     return d
 
 
 def main():
+    with open("./data_meta.json") as f:
+        table_meta = json.load(f)
+
+    table_name = "tokyo_crime_data"
+    use_cols_meta = [t["cols"] for t in table_meta if t["table_name"] == table_name][0]
+    use_cols_dict = {m["ja_name"]: m["en_name"] for m in use_cols_meta}
     # GCSにアップロード
     gcs_client = Gcs_client()
-    gcs_client.create_bucket(BUCKET_NAME)
+    gcs_client.create_bucket(table_name)
     files = glob.glob("../data/tokyo/*.csv", recursive=True)
-    fields = []
-    for c in cols_dict.values():
-        fields.append(pa.field(c, pa.string()))
+    fields = [pa.field(m["en_name"], pa_dict[m["col_type"]]) for m in use_cols_meta]
     table_schema = pa.schema(fields)
-    all_objects = gcs_client.list_all_objects(BUCKET_NAME)
+    all_objects = gcs_client.list_all_objects(table_name)
     for f in files:
         # データのクレンジング
-        d = clean_data(f)
+        d = clean_data(f, use_cols_dict)
         # ファイル名に都道府県名、フォルダ名に手口をつける。
         pref = os.path.dirname(f).split("/")[-1]
         teguchi = ja_to_en[d["teguchi"].values[0]]
@@ -105,16 +84,16 @@ def main():
             continue
         table = pa.Table.from_pandas(d, schema=table_schema, preserve_index=False)
         pq.write_table(table, local_path)
-        gcs_client.upload_gcs(BUCKET_NAME, local_path, upload_path)
+        gcs_client.upload_gcs(table_name, local_path, upload_path)
 
     # テーブル作成
     bq_client = Bigquery_cliant()
     dataset_name = "crime_dataset"
-    table_name = "crime"
+    table_name = "tokyo_crime_data"
     bq_client.create_dataset(dataset_name)
-    schema = bq_client.create_string_schema(cols_dict.values())
+    schema = bq_client.create_string_schema(use_cols_dict.values())
     table_id = f"{bq_client.client.project}.{dataset_name}.{table_name}"
-    bq_client.create_external_table(BUCKET_NAME, table_id, schema, partitioned=True)
+    bq_client.create_external_table(table_name, table_id, schema, partitioned=True)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,147 @@
+[
+    {
+        "table_name": "tokyo_crime_data",
+        "cols": [
+            {
+                "ja_name": "罪名",
+                "en_name": "zaimei",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "手口",
+                "en_name": "teguchi",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "管轄警察署",
+                "en_name": "keisatsusyo",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "管轄交番・駐在所",
+                "en_name": "kouban",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "都道府県",
+                "en_name": "prefecture",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "市区町村コード",
+                "en_name": "city_code",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "市区町村",
+                "en_name": "city",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "町丁目",
+                "en_name": "cyoume",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "発生年月日",
+                "en_name": "occurrence_date",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "発生時",
+                "en_name": "occurrence_time",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "発生場所",
+                "en_name": "occurrence_point",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "発生場所の詳細",
+                "en_name": "occurrence_point_info",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "被害者の性別",
+                "en_name": "victim_sex",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "被害者の年齢",
+                "en_name": "victim_age",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "被害者の職業",
+                "en_name": "victim_job",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "現金被害の有無",
+                "en_name": "is_financial_damage",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "施錠関係",
+                "en_name": "sejyou",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "現金以外の主な被害品",
+                "en_name": "other_damage",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "盗難防止装置の有無",
+                "en_name": "is_device",
+                "col_type": "STRING"
+            }
+        ]
+    },
+    {
+        "table_name": "daily_weather",
+        "cols": [
+            {
+                "ja_name": "年月日",
+                "en_name": "weather_date",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "曜日",
+                "en_name": "day_of_week",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "平均気温(℃)",
+                "en_name": "average_temperature",
+                "col_type": "FLOAT64"
+            },
+            {
+                "ja_name": "最高気温(℃)",
+                "en_name": "maximum_temperature",
+                "col_type": "FLOAT64"
+            },
+            {
+                "ja_name": "最低気温(℃)",
+                "en_name": "mimum_temperature",
+                "col_type": "FLOAT64"
+            },
+            {
+                "ja_name": "降水量の合計(mm)",
+                "en_name": "precipitation",
+                "col_type": "FLOAT64"
+            },
+            {
+                "ja_name": "天気概況(昼：06時〜18時)",
+                "en_name": "weather_noon",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "天気概況(夜：18時〜翌日06時)",
+                "en_name": "weather_night",
+                "col_type": "STRING"
+            }
+        ]
+    }
+]
