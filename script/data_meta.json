@@ -1,6 +1,6 @@
 [
     {
-        "table_name": "tokyo_crime_data",
+        "table_name": "tokyo_crimes",
         "cols": [
             {
                 "ja_name": "罪名",
@@ -100,7 +100,7 @@
         ]
     },
     {
-        "table_name": "daily_weather",
+        "table_name": "daily_weathers",
         "cols": [
             {
                 "ja_name": "年月日",
@@ -141,6 +141,36 @@
                 "ja_name": "天気概況(夜：18時〜翌日06時)",
                 "en_name": "weather_night",
                 "col_type": "STRING"
+            }
+        ]
+    },
+    {
+        "table_name": "coordinate_masters",
+        "cols": [
+            {
+                "ja_name": "都道府県名",
+                "en_name": "prefecture",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "市区町村名",
+                "en_name": "city",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "大字・丁目名",
+                "en_name": "cyoume",
+                "col_type": "STRING"
+            },
+            {
+                "ja_name": "緯度",
+                "en_name": "longitude",
+                "col_type": "FLOAT64"
+            },
+            {
+                "ja_name": "経度",
+                "en_name": "latitude",
+                "col_type": "FLOAT64"
             }
         ]
     }

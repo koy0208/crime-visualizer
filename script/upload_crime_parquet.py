@@ -59,7 +59,7 @@ def main():
     with open("./data_meta.json") as f:
         table_meta = json.load(f)
 
-    table_name = "tokyo_crime_data"
+    table_name = "tokyo_crimes"
     use_cols_meta = [t["cols"] for t in table_meta if t["table_name"] == table_name][0]
     use_cols_dict = {m["ja_name"]: m["en_name"] for m in use_cols_meta}
     # GCSにアップロード
@@ -72,13 +72,9 @@ def main():
     for f in files:
         # データのクレンジング
         d = clean_data(f, use_cols_dict)
-        # ファイル名に都道府県名、フォルダ名に手口をつける。
-        pref = os.path.dirname(f).split("/")[-1]
-        teguchi = ja_to_en[d["teguchi"].values[0]]
         local_file_name = os.path.basename(f.lower()).replace(".csv", "")
-        local_file_name = f"{pref}_{local_file_name}.parquet"
         local_path = f"../output/{local_file_name}"
-        upload_path = f"teguchi_en={teguchi}/{local_file_name}"
+        upload_path = f"{local_file_name}"
         # すでにファイルがあればスキップ
         if upload_path in set(all_objects):
             continue
@@ -89,11 +85,11 @@ def main():
     # テーブル作成
     bq_client = Bigquery_cliant()
     dataset_name = "crime_dataset"
-    table_name = "tokyo_crime_data"
     bq_client.create_dataset(dataset_name)
-    schema = bq_client.create_string_schema(use_cols_dict.values())
+    schema_types = {m["en_name"]: m["col_type"] for m in use_cols_meta}
+    schema = bq_client.create_schema(schema_types)
     table_id = f"{bq_client.client.project}.{dataset_name}.{table_name}"
-    bq_client.create_external_table(table_name, table_id, schema, partitioned=True)
+    bq_client.create_external_table(table_name, table_id, schema, partitioned=False)
 
 
 if __name__ == "__main__":

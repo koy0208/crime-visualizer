@@ -12,7 +12,7 @@ def main():
     with open("./data_meta.json") as f:
         table_meta = json.load(f)
 
-    table_name = "daily_weather"
+    table_name = "daily_weathers"
     use_cols_meta = [t["cols"] for t in table_meta if t["table_name"] == table_name][0]
     use_cols_dict = {m["ja_name"]: m["en_name"] for m in use_cols_meta}
     df = pd.read_csv(
@@ -29,10 +29,9 @@ def main():
     fields = [pa.field(m["en_name"], pa_dict[m["col_type"]]) for m in use_cols_meta]
     table_schema = pa.schema(fields)
     local_path = f"../output/weather_data"
-    upload_path = f"weather_data"
     table = pa.Table.from_pandas(df, schema=table_schema, preserve_index=False)
     pq.write_table(table, local_path)
-    gcs_client.upload_gcs(table_name, local_path, upload_path)
+    gcs_client.upload_gcs(table_name, local_path, table_name)
 
     # テーブル作成
     bq_client = Bigquery_cliant()

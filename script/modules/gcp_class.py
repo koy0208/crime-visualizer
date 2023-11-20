@@ -1,3 +1,4 @@
+import streamlit as st
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -7,10 +8,8 @@ from google.cloud.exceptions import NotFound
 
 class Gcs_client:
     def __init__(self) -> None:
-        key_path = "./credential.json"
-        service_account_info = json.load(open(key_path))
         self.credentials = service_account.Credentials.from_service_account_info(
-            service_account_info
+            st.secrets["gcp_service_account"]
         )
         self.client = storage.Client(
             credentials=self.credentials,
@@ -64,24 +63,14 @@ class Gcs_client:
 
 class Bigquery_cliant:
     def __init__(self) -> None:
-        key_path = "./credential.json"
-        service_account_info = json.load(open(key_path))
         self.credentials = service_account.Credentials.from_service_account_info(
-            service_account_info
+            st.secrets["gcp_service_account"]
         )
         self.client = bigquery.Client(
             credentials=self.credentials,
             project=self.credentials.project_id,
             location="US-WEST1",
         )
-
-    @staticmethod
-    def create_string_schema(values):
-        schema = []
-        for c in values:
-            schema.append(bigquery.SchemaField(c, "STRING", mode="NULLABLE"))
-
-        return schema
 
     @staticmethod
     def create_schema(schema_dict):

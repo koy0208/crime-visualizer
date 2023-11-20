@@ -2,6 +2,8 @@ data/*
 output/*
 **/credential.json
 **.DS_store
+crime-vis-env
+.streamlit
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
