@@ -16,7 +16,7 @@ st.set_page_config(layout="wide", page_title="オープンデータ", page_icon=
 
 
 # 可視化用データの読み込み
-@st.cache_resource(persist=True)
+@st.cache_resource(ttl="7days")
 def load_data():
     bq = Bigquery_cliant()
     df = bq.read_sql(f"select * from  {table_id}")
