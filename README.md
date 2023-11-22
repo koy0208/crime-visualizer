@@ -3,7 +3,7 @@ crime of japan dashboard
 ![Alt text](image.png)
 
 ## 構成
-![Alt text](構成.drawio.png)
+![Alt text](./network.drawio.png)
 
 ## データソース
 [犯罪オープンデータ リンク集｜警察庁Webサイト](https://www.npa.go.jp/toukei/seianki/hanzaiopendatalink.html)
