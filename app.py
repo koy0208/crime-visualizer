@@ -16,7 +16,7 @@ st.set_page_config(layout="wide", page_title="オープンデータ", page_icon=
 
 
 # 可視化用データの読み込み
-@st.cache_resource
+@st.cache_resource(ttl=3600)
 def load_data():
     bq = Bigquery_cliant()
     df = bq.read_sql(f"select * from  {table_id}")
@@ -85,6 +85,16 @@ with tab1:
         )
         # X軸の日付形式を変更
         fig.update_xaxes(tickformat="%Y年%m月", title="発生年月")  # 例: 2022-11 の形式
+        fig.update_layout(
+            legend=dict(
+                x=1,
+                y=1.1,
+                xanchor="right",
+                yanchor="top",
+                # orientation="h",
+                title=None,
+            )
+        )
         st.plotly_chart(fig, use_container_width=True)
 
     row1_1, row1_2 = st.columns(2)
@@ -112,7 +122,7 @@ with tab1:
 
         fig.update_layout(
             height=700,
-            margin=dict(l=20, r=20, t=0, b=0),  # 左右上下の余白を設定
+            margin=dict(l=20, r=20, t=0, b=0),  # 左右上下の余白を設定,
         )
         st.plotly_chart(fig, use_container_width=True)
 
