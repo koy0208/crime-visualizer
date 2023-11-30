@@ -16,4 +16,4 @@ https://crime-visualizer-tokyo.streamlit.app/
 
 
 ## 詳細
-()[]
+[dbtとBigQueryで東京犯罪ダッシュボードを作った)](https://www.medi-08-data-06.work/entry/dbt-tokyo-crimes)
